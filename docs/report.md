@@ -44,7 +44,11 @@ D-1: правая граница периода отчёта включалас�
 
 `ghcr.io/nagib227/support-service:3713ad291af47c51fc73118471d814055cab5093`
 
-Тег совпадает с полным SHA коммита. На pull request публикуется только отчёт проверок: job с образом в этом событии не запускается. Откат к образу выше выполняется workflow `Rollback` с параметром `image_tag`, равным этому SHA.
+Тег совпадает с полным SHA коммита. Pull request [#1](https://github.com/Nagib227/support-service/pull/1) прошёл только проверку и тесты: сборка образа и доставка в этом прогоне пропущены — https://github.com/Nagib227/support-service/actions/runs/41992954788
+
+После слияния `main` опубликовал следующий образ: `ghcr.io/nagib227/support-service:902c8378008154fdb67d9e5c1408db605164d432`, прогон https://github.com/Nagib227/support-service/actions/runs/41993147444
+
+Откат к предыдущему образу выполнен workflow `Rollback`: https://github.com/Nagib227/support-service/actions/runs/41993677316 Образ `3713ad291af47c51fc73118471d814055cab5093` скачан из GHCR, запущен и прошёл smoke.
 
 ## Ограничения
 
