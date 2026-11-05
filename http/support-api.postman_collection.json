@@ -1,0 +1,87 @@
+{
+  "info": {
+    "name": "Сервис заявок",
+    "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+  },
+  "variable": [
+    { "key": "baseUrl", "value": "http://localhost:8080" },
+    { "key": "categoryId", "value": "11111111-1111-1111-1111-111111111111" },
+    { "key": "ticketId", "value": "" }
+  ],
+  "item": [
+    {
+      "name": "Категории",
+      "request": { "method": "GET", "url": "{{baseUrl}}/api/categories" }
+    },
+    {
+      "name": "Создать заявку",
+      "request": {
+        "method": "POST",
+        "header": [{ "key": "Content-Type", "value": "application/json" }],
+        "body": {
+          "mode": "raw",
+          "raw": "{\n  \"title\": \"Не печатает принтер\",\n  \"description\": \"Кабинет 214\",\n  \"categoryId\": \"{{categoryId}}\",\n  \"priority\": \"HIGH\",\n  \"dueAt\": \"2026-01-20T12:00:00Z\"\n}"
+        },
+        "url": "{{baseUrl}}/api/tickets"
+      }
+    },
+    {
+      "name": "Получить заявку",
+      "request": { "method": "GET", "url": "{{baseUrl}}/api/tickets/{{ticketId}}" }
+    },
+    {
+      "name": "Изменить поля",
+      "request": {
+        "method": "PATCH",
+        "header": [{ "key": "Content-Type", "value": "application/json" }],
+        "body": {
+          "mode": "raw",
+          "raw": "{\n  \"description\": \"Кабинет 214, бумага замята\",\n  \"priority\": \"MEDIUM\",\n  \"dueAt\": \"2026-01-21T09:00:00Z\"\n}"
+        },
+        "url": "{{baseUrl}}/api/tickets/{{ticketId}}"
+      }
+    },
+    {
+      "name": "Взять в работу",
+      "request": {
+        "method": "POST",
+        "header": [{ "key": "Content-Type", "value": "application/json" }],
+        "body": { "mode": "raw", "raw": "{\n  \"status\": \"IN_PROGRESS\",\n  \"comment\": \"Взял в работу\"\n}" },
+        "url": "{{baseUrl}}/api/tickets/{{ticketId}}/status"
+      }
+    },
+    {
+      "name": "Завершить",
+      "request": {
+        "method": "POST",
+        "header": [{ "key": "Content-Type", "value": "application/json" }],
+        "body": { "mode": "raw", "raw": "{\n  \"status\": \"RESOLVED\"\n}" },
+        "url": "{{baseUrl}}/api/tickets/{{ticketId}}/status"
+      }
+    },
+    {
+      "name": "Запрещённый переход",
+      "request": {
+        "method": "POST",
+        "header": [{ "key": "Content-Type", "value": "application/json" }],
+        "body": { "mode": "raw", "raw": "{\n  \"status\": \"IN_PROGRESS\"\n}" },
+        "url": "{{baseUrl}}/api/tickets/{{ticketId}}/status"
+      }
+    },
+    {
+      "name": "История",
+      "request": { "method": "GET", "url": "{{baseUrl}}/api/tickets/{{ticketId}}/history" }
+    },
+    {
+      "name": "Список",
+      "request": { "method": "GET", "url": "{{baseUrl}}/api/tickets?page=0&size=20&sort=createdAt,desc" }
+    },
+    {
+      "name": "Сводка",
+      "request": {
+        "method": "GET",
+        "url": "{{baseUrl}}/api/reports/summary?from=2026-01-01T00:00:00Z&to=2026-02-01T00:00:00Z"
+      }
+    }
+  ]
+}

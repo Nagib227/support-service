@@ -1,0 +1,62 @@
+name: Rollback
+
+on:
+  workflow_dispatch:
+    inputs:
+      image_tag:
+        description: Тег образа (полный SHA коммита предыдущей версии)
+        required: true
+        type: string
+
+jobs:
+  rollback:
+    name: Возврат к предыдущему образу
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      packages: read
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Имя образа
+        id: meta
+        run: |
+          owner=$(echo "${{ github.repository_owner }}" | tr '[:upper:]' '[:lower:]')
+          echo "image=ghcr.io/${owner}/support-service:${{ inputs.image_tag }}" >> "$GITHUB_OUTPUT"
+
+      - name: Вход в GHCR
+        uses: docker/login-action@v3
+        with:
+          registry: ghcr.io
+          username: ${{ github.actor }}
+          password: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Проверка выбранного образа запуском
+        run: |
+          docker pull "${{ steps.meta.outputs.image }}"
+          docker tag "${{ steps.meta.outputs.image }}" "support-service:${{ inputs.image_tag }}"
+          export APP_IMAGE="support-service:${{ inputs.image_tag }}"
+          docker compose -p support-rollback up -d --wait --no-build
+          bash scripts/smoke.sh
+          docker compose -p support-rollback down -v
+
+      - name: Доставка этого образа на учебный стенд
+        env:
+          DEPLOY_HOST: ${{ secrets.DEPLOY_HOST }}
+          DEPLOY_USER: ${{ secrets.DEPLOY_USER }}
+          DEPLOY_SSH_KEY: ${{ secrets.DEPLOY_SSH_KEY }}
+          DEPLOY_PATH: ${{ secrets.DEPLOY_PATH }}
+          IMAGE: ${{ steps.meta.outputs.image }}
+        run: |
+          if [ -z "$DEPLOY_HOST" ] || [ -z "$DEPLOY_USER" ] || [ -z "$DEPLOY_SSH_KEY" ]; then
+            echo "Внешний стенд не настроен. Образ ${IMAGE} запущен и проверен локально в runner."
+            echo "На машине разработчика: scripts/rollback.ps1 -Tag ${{ inputs.image_tag }}"
+            exit 0
+          fi
+          mkdir -p ~/.ssh
+          chmod 700 ~/.ssh
+          printf '%s\n' "$DEPLOY_SSH_KEY" > ~/.ssh/id_deploy
+          chmod 600 ~/.ssh/id_deploy
+          path="${DEPLOY_PATH:-/opt/support}"
+          ssh -i ~/.ssh/id_deploy -o StrictHostKeyChecking=accept-new "$DEPLOY_USER@$DEPLOY_HOST" \
+            "cd '$path' && docker pull '$IMAGE' && APP_IMAGE='$IMAGE' docker compose up -d --wait --no-build && curl -fsS http://localhost:8080/actuator/health"
