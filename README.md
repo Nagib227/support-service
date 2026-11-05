@@ -162,7 +162,7 @@ docker build -t support-service:<старый-sha> .
 2. Создать заявку, перевести в `IN_PROGRESS`, затем в `RESOLVED`, открыть `GET /api/reports/summary`.
 3. Объяснить вызов: Java `ReportController` → Kotlin `ReportService` → Java `TicketReportQuery`.
 4. Повторить переход закрытой заявки в работу и показать, что статус и история не изменились.
-5. Открыть успешный прогон workflow и назвать тег образа. Для отката запустить предыдущий тег.
+5. Открыть успешный прогон https://github.com/Nagib227/support-service/actions/runs/41992262995 и назвать образ `ghcr.io/nagib227/support-service:3713ad291af47c51fc73118471d814055cab5093`. Для отката запустить workflow `Rollback` с этим тегом.
 6. Разобрать один из трёх сбоев выше.
 
 ## Состав репозитория
